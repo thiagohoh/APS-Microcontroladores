@@ -52,6 +52,7 @@ signed int le_pote(unsigned char canal);
 signed int le_luz(unsigned char canal);
 void servo_controler(unsigned int valor);
 void messagero(unsigned int who);
+signed int servoMsg(unsigned int valor);
 #endif
 
 void USART_Inic(unsigned int ubrr0) {
@@ -64,14 +65,16 @@ void USART_Inic(unsigned int ubrr0) {
 }
 //---------------------------------------------------------------------------
 void USART_Transmite(unsigned char dado) {
-	while (!(UCSR0A & (1 << UDRE0)));
-		 //espera o dado ser enviado
+	while (!(UCSR0A & (1 << UDRE0)))
+		;
+	//espera o dado ser enviado
 	UDR0 = dado;          //envia o dado
 }
 //---------------------------------------------------------------------------
 unsigned char USART_Recebe() {
-	while (!(UCSR0A & (1 << RXC0)));
-		  //espera o dado ser recebido
+	while (!(UCSR0A & (1 << RXC0)))
+		;
+	//espera o dado ser recebido
 	return UDR0;        //retorna o dado recebido
 }
 //---------------------------------------------------------------------------
@@ -106,7 +109,7 @@ void ident_num(unsigned int valor, unsigned char *disp) {
 const char msg1[] PROGMEM = "Sensor de Temperatura LM35 - canal 0\n\0";
 const char msg2[] PROGMEM = "Potenciometro - canal 2\n\0";
 const char msg3[] PROGMEM = "Sensor de Luz - canal 1\n\0";
-const char msg4[] PROGMEM = "servo\n\0";
+const char msg4[] PROGMEM = "Servo   \n\0";
 unsigned int temp;
 unsigned char digitos[tam_vetor];
 //--------------------------------------------------------------------------
@@ -130,25 +133,24 @@ int main() {
 		messagero(1);
 		_delay_ms(1000);
 
-
 		ident_num((unsigned int) le_luz(1), digitos);
 		messagero(2);
 		_delay_ms(1000);
-
 
 		ident_num((unsigned int) le_pote(2), digitos);
 		messagero(3);
 		_delay_ms(1000);
 
-		const char msg4[] PROGMEM = "servo\n\0";
+		escreve_USART_Flash(msg4);
 		servo_controler((unsigned int) le_pote(2));
+		servoMsg((unsigned int) le_pote(2));
 
 	}
 }
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------
-signed int le_temp(unsigned char canal) {// função  do sensor de temperatura
+signed int le_temp(unsigned char canal) { // função  do sensor de temperatura
 	// ADMUX =  (1<<REFS1)|(1<<REFS0);
 	ADMUX = 0xF0; //Limpar o canal lido anteriormente
 	ADMUX = 0b11000000;
@@ -156,34 +158,37 @@ signed int le_temp(unsigned char canal) {// função  do sensor de temperatura
 	//ADCSRA |= (1<<ADSC);
 	set_bit(ADCSRA, ADSC);                //inicia a conversão
 	//while(ADCSRA & (1<<ADSC));
-	while (tst_bit(ADCSRA, ADSC));
-		          //espera a conversão ser finalizada
+	while (tst_bit(ADCSRA, ADSC))
+		;
+	//espera a conversão ser finalizada
 	return (ADC + (ADC * 19) / 256);             //fator k de divisão = 1
 
 }
 
-signed int le_pote(unsigned char canal) {// função  do potenciomentro
+signed int le_pote(unsigned char canal) {           // função  do potenciomentro
 
 	ADMUX = 0xF0; //Limpar o canal lido anteriormente
 	ADMUX = canal;  // seleciona o canal
 	ADMUX = ADMUX | 0x40;  // seta voltagem para VCC padrao 5v
 	set_bit(ADCSRA, ADSC);                //inicia a conversão
-	while (tst_bit(ADCSRA, ADSC));//espera a conversão ser finalizada
-	ADMUX = 0b11000000;// seta a voltagem de volta para 1.1v
+	while (tst_bit(ADCSRA, ADSC))
+		;                //espera a conversão ser finalizada
+	ADMUX = 0b11000000;                // seta a voltagem de volta para 1.1v
 	return ADC;
 }
-signed int le_luz(unsigned char canal) {// função  do sensor de luz
+signed int le_luz(unsigned char canal) {             // função  do sensor de luz
 	ADMUX = 0xF0; //Limpar o canal lido anteriormente
 	//ADMUX  = 0b11000101;//seta a tensao certa  refs1 refs0 para o canal 1
 	ADMUX = canal; //Define o novo canal a ser lido
 	ADMUX = ADMUX | 0x40;
 	//ADMUX = 0b11110000;
 	set_bit(ADCSRA, ADSC); //inicia a conversão
-	while (tst_bit(ADCSRA, ADSC));
+	while (tst_bit(ADCSRA, ADSC))
+		;
 	return ADC;
 }
 
-void servo_controler(unsigned int valor) {// função  do controlador do servo
+void servo_controler(unsigned int valor) { // função  do controlador do servo
 	ADMUX = ADMUX | 0x40;
 	ICR1 = TOP; //configura o período do PWM (20 ms)
 	// Configura o TC1 para o modo PWM rápido via ICR1, prescaler = 8
@@ -220,7 +225,7 @@ void servo_controler(unsigned int valor) {// função  do controlador do servo
 
 }
 
-void messagero(unsigned int who) {// função que envia as menssagens  para o serial monitor
+void messagero(unsigned int who) { // função que envia as menssagens  para o serial monitor
 	if (who == 1) {
 		escreve_USART_Flash(msg1);
 		USART_Transmite(digitos[3]);
@@ -249,4 +254,61 @@ void messagero(unsigned int who) {// função que envia as menssagens  para o se
 		USART_Transmite(digitos[0]);
 		USART_Transmite('\n');
 	}
+}
+
+signed int servoMsg(unsigned int valor) {
+
+	if ((valor >= 0) && (valor < 204)) {
+
+		ident_num((unsigned int) 0, digitos);
+		USART_Transmite(digitos[4]);
+		USART_Transmite(digitos[3]);
+		USART_Transmite(digitos[2]);
+		USART_Transmite(digitos[1]);
+		USART_Transmite(digitos[0]);
+		USART_Transmite('\n');
+
+	} else if ((valor >= 205) && (valor < 409)) {
+
+		ident_num((unsigned int) 45, digitos);
+		USART_Transmite(digitos[4]);
+		USART_Transmite(digitos[3]);
+		USART_Transmite(digitos[2]);
+		USART_Transmite(digitos[1]);
+		USART_Transmite(digitos[0]);
+		USART_Transmite('\n');
+
+	} else if ((valor >= 410) && (valor < 614)) {
+
+		ident_num((unsigned int) 90, digitos);
+		USART_Transmite(digitos[4]);
+		USART_Transmite(digitos[3]);
+		USART_Transmite(digitos[2]);
+		USART_Transmite(digitos[1]);
+		USART_Transmite(digitos[0]);
+		USART_Transmite('\n');
+
+	}
+
+	else if ((valor >= 615) && (valor < 819)) {
+
+		ident_num((unsigned int) 135, digitos);
+		USART_Transmite(digitos[4]);
+		USART_Transmite(digitos[3]);
+		USART_Transmite(digitos[2]);
+		USART_Transmite(digitos[1]);
+		USART_Transmite(digitos[0]);
+		USART_Transmite('\n');
+
+	} else if ((valor >= 820) && (valor <= 1023)) {
+		ident_num((unsigned int) 180, digitos);
+		USART_Transmite(digitos[4]);
+		USART_Transmite(digitos[3]);
+		USART_Transmite(digitos[2]);
+		USART_Transmite(digitos[1]);
+		USART_Transmite(digitos[0]);
+		USART_Transmite('\n');
+
+	}
+
 }
