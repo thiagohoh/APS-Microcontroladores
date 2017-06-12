@@ -110,6 +110,7 @@ const char msg1[] PROGMEM = "Sensor de Temperatura LM35 - canal 0\n\0";
 const char msg2[] PROGMEM = "Potenciometro - canal 2\n\0";
 const char msg3[] PROGMEM = "Sensor de Luz - canal 1\n\0";
 const char msg4[] PROGMEM = "Servo   \n\0";
+const char msg5[] PROGMEM = "Temperatura: 'A'\nPotenciometro: 'B'\nLuz: 'C'\nServo: 'D'\n\0";
 unsigned int temp;
 unsigned char digitos[tam_vetor];
 //--------------------------------------------------------------------------
@@ -127,23 +128,44 @@ int main() {
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
 
 	while (1) {
-		//escreve_USART_Flash(msg1);
+		
+      escreve_USART_Flash(msg5);
+      
+      switch(USART_Recebe()){
+        
+          case 'A':
+       	 	ident_num((unsigned int) le_temp(0), digitos); //leitura de temperatura, sem sinal
+			messagero(1);
+			_delay_ms(1000);
+        	break;
+      
 
-		ident_num((unsigned int) le_temp(0), digitos); //leitura de temperatura, sem sinal
-		messagero(1);
-		_delay_ms(1000);
+       	  case 'B':        
+       		ident_num((unsigned int) le_luz(1), digitos);
+			messagero(2);
+			_delay_ms(1000);
+        	break;
+        
+      
+		
+      	  case 'C':        
+      		ident_num((unsigned int) le_pote(2), digitos);
+			messagero(3);
+			_delay_ms(1000);
+        	break;
+       
+      
 
-		ident_num((unsigned int) le_luz(1), digitos);
-		messagero(2);
-		_delay_ms(1000);
+		  case 'D':        
+      	 	escreve_USART_Flash(msg4);
+			servo_controler((unsigned int) le_pote(2));
+			servoMsg((unsigned int) le_pote(2));
+			_delay_ms(1000);
+         break;
+      }		
 
-		ident_num((unsigned int) le_pote(2), digitos);
-		messagero(3);
-		_delay_ms(1000);
-
-		escreve_USART_Flash(msg4);
-		servo_controler((unsigned int) le_pote(2));
-		servoMsg((unsigned int) le_pote(2));
+		
+		
 
 	}
 }
