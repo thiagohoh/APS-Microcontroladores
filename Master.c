@@ -15,6 +15,16 @@
 
 #ifndef _LCD_H
 #define _LCD_H
+#define BAUD   9600    //taxa de 9600 bps
+#define MYUBRR  F_CPU/16/BAUD-1
+#define tam_vetor 6 //número de digitos individuais para a conversão por ident_num()
+#define conv_ascii  48  //48 se ident_num() deve retornar um número no formato ASCII (0 para formato normal)
+
+void USART_Inic(unsigned int ubbr0);
+void USART_Transmite(unsigned char dado);
+unsigned char USART_Recebe();
+void escreve_USART(char *c);
+void escreve_USART_Flash(const char *c);
 
 //#include "def_principais.h"
 
@@ -43,6 +53,56 @@ void ident_num(unsigned int valor, unsigned char *disp);
 
 #endif
 
+void USART_Inic(unsigned int ubrr0) {
+	UBRR0H = (unsigned char) (ubrr0 >> 8); //Ajusta a taxa de transmissão
+	UBRR0L = (unsigned char) ubrr0;
+
+	UCSR0A = 0; //desabilitar velocidade dupla (no Arduino é habilitado por padrão)
+	UCSR0B = (1 << RXEN0) | (1 << TXEN0); //Habilita a transmissão e a recepção
+	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);/*modo assíncrono, 8 bits de dados, 1 bit de parada, sem paridade*/
+}
+//---------------------------------------------------------------------------
+void USART_Transmite(unsigned char dado) {
+	while (!(UCSR0A & (1 << UDRE0)))
+		;
+	//espera o dado ser enviado
+	UDR0 = dado;          //envia o dado
+}
+//---------------------------------------------------------------------------
+unsigned char USART_Recebe() {
+	while (!(UCSR0A & (1 << RXC0)))
+		;
+	//espera o dado ser recebido
+	return UDR0;        //retorna o dado recebido
+}
+//---------------------------------------------------------------------------
+void escreve_USART(char *c)   //escreve String (RAM)
+{
+	for (; *c != 0; c++)
+		USART_Transmite(*c);
+}
+//---------------------------------------------------------------------------
+void escreve_USART_Flash(const char *c) //escreve String (Flash)
+{
+	for (; pgm_read_byte(&(*c)) != 0; c++)
+		USART_Transmite(pgm_read_byte(&(*c)));
+}
+//---------------------------------------------------------------------------
+//Conversão de um número em seus digitos individuais
+//---------------------------------------------------------------------------
+void ident_num(unsigned int valor, unsigned char *disp) {
+	unsigned char n;
+
+	for (n = 0; n < tam_vetor; n++)
+		disp[n] = 0 + conv_ascii; //limpa vetor para armazenagem dos digitos
+
+	do {
+		*disp = (valor % 10) + conv_ascii; //pega o resto da divisao por 10
+		valor /= 10;            //pega o inteiro da divisão por 10
+		disp++;
+
+	} while (valor != 0);
+}
 // Sub-rotina para enviar caracteres e comandos ao LCD com via de dados de 4 bits
 //---------------------------------------------------------------------------------------------
 void cmd_LCD(unsigned char c, char cd) //c é o dado  e cd indica se é instrução ou caractere
