@@ -90,19 +90,7 @@ void escreve_USART_Flash(const char *c) //escreve String (Flash)
 //---------------------------------------------------------------------------
 //Conversão de um número em seus digitos individuais
 //---------------------------------------------------------------------------
-void ident_num(unsigned int valor, unsigned char *disp) {
-	unsigned char n;
 
-	for (n = 0; n < tam_vetor; n++)
-		disp[n] = 0 + conv_ascii; //limpa vetor para armazenagem dos digitos
-
-	do {
-		*disp = (valor % 10) + conv_ascii; //pega o resto da divisao por 10
-		valor /= 10;            //pega o inteiro da divisão por 10
-		disp++;
-
-	} while (valor != 0);
-}
 // Sub-rotina para enviar caracteres e comandos ao LCD com via de dados de 4 bits
 //---------------------------------------------------------------------------------------------
 void cmd_LCD(unsigned char c, char cd) //c é o dado  e cd indica se é instrução ou caractere
@@ -220,6 +208,7 @@ volatile unsigned char flag = 0;
 ISR(PCINT0_vect);
 int main() {
   unsigned char k;
+  USART_Inic(MYUBRR);
 
   DDRD = 0xFF;          //PORTD como saída
   //DDRB = 0xFF;          //PORTB como saída
@@ -238,32 +227,42 @@ int main() {
   _delay_ms(200);
 	
   for (;;) {
-
+	
 
 
     if (flag) {
 
       if (!tst_bit(PINB, PB2)) {
-	escreve_LCD("?");
-	
+		
+		 USART_Transmite('A');
+        	
+            
+      
         flag=0;
         
       } else if (!tst_bit(PINB, PB3)) {
-        escreve_LCD("L");
-	
+        
+        USART_Transmite('B');
         flag=0;
        
       } else if (!tst_bit(PINB, PB4)) {
-        escreve_LCD("O");
+        
+        USART_Transmite('C');
 	
         flag=0;
         
       } else if (!tst_bit(PINB, PB5)) {
-        escreve_LCD("!");
+        
+        USART_Transmite('D');
 	
         flag=0;
         
       }
+      //char op = USART_Recebe();
+  
+   
+      
+      
 
       
       
