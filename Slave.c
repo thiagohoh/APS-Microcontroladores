@@ -129,9 +129,10 @@ int main() {
 
 	while (1) {
 		
-      escreve_USART_Flash(msg5);
-      
+      //escreve_USART_Flash(msg5);
+      char a;
       switch(USART_Recebe()){
+        
         
           case 'A':
        	 	ident_num((unsigned int) le_temp(0), digitos); //leitura de temperatura, sem sinal
@@ -157,7 +158,7 @@ int main() {
       
 
 		  case 'D':        
-      	 	escreve_USART_Flash(msg4);
+      	 	//escreve_USART_Flash(msg4);
 			servo_controler((unsigned int) le_pote(2));
 			servoMsg((unsigned int) le_pote(2));
 			_delay_ms(1000);
@@ -249,7 +250,7 @@ void servo_controler(unsigned int valor) { // função  do controlador do servo
 
 void messagero(unsigned int who) { // função que envia as menssagens  para o serial monitor
 	if (who == 1) {
-		escreve_USART_Flash(msg1);
+		//escreve_USART_Flash(msg1);
 		USART_Transmite(digitos[3]);
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
@@ -259,7 +260,7 @@ void messagero(unsigned int who) { // função que envia as menssagens  para o s
 		USART_Transmite('C');
 		USART_Transmite('\n');
 	} else if (who == 2) {
-		escreve_USART_Flash(msg3);
+		//escreve_USART_Flash(msg3);
 		USART_Transmite(digitos[4]);
 		USART_Transmite(digitos[3]);
 		USART_Transmite(digitos[2]);
@@ -268,7 +269,7 @@ void messagero(unsigned int who) { // função que envia as menssagens  para o s
 		USART_Transmite('\n');
 
 	} else if (who == 3) {
-		escreve_USART_Flash(msg2);
+		//escreve_USART_Flash(msg2);
 		USART_Transmite(digitos[4]);
 		USART_Transmite(digitos[3]);
 		USART_Transmite(digitos[2]);
