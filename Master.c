@@ -234,7 +234,7 @@ int main() {
 	
     if (flag) {
 
-      if (!tst_bit(PINB, PB2)) {
+      if (!tst_bit(PINB, PB2)) {// testa se o botao foi apertado
         cmd_LCD(0x01, 0); //limpa todo o display
 			escreve_LCD("Sel.  A");
         
@@ -299,8 +299,8 @@ int main() {
 
 
 
-ISR(PCINT0_vect) {
+ISR(PCINT0_vect) {// interrupção por mudança de estado
   flag = 1;
-  //_delay_ms(200);
+  //_delay_ms(200);// precisa de delay para evitar barulho.
 }
 
