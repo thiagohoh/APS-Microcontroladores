@@ -212,10 +212,10 @@ int main() {
 
   DDRD = 0xFF;          //PORTD como saída
   //DDRB = 0xFF;          //PORTB como saída
-  DDRB = 0b11000011;  // pb0 e pb1 como saida o resto como entrada
-  PORTB = 0b00111100; // pullup
+  DDRB = 0b11100011;  // pb0 e pb1 como saida o resto como entrada
+  PORTB = 0b00011100; // pullup
   PCICR = 1 << PCIE0; // habilita porb
-  PCMSK0 = (1 << PCINT2) | (1 << PCINT3) | (1 << PCINT4) | (1 << PCINT5);//habilita os pinos
+  PCMSK0 = (1 << PCINT2) | (1 << PCINT3) | (1 << PCINT4);//habilita os pinos
   sei();
 
   inic_LCD_4bits();       //inicializa o LCD
@@ -223,56 +223,84 @@ int main() {
   cmd_LCD(0x80, 0);     //endereça a posição para escrita dos caracteres
   //cmd_LCD(0x00,1);        //apresenta primeiro caractere 0x00
   //cmd_LCD(0x01,1);        //apresenta segundo  caractere 0x01
-  escreve_LCD("a");
-  _delay_ms(200);
+  escreve_LCD("Sel. A B C");
+  //_delay_ms(200);
 	
   for (;;) {
+    
+    cmd_LCD(0x80, 0); //inicializa cursor na primeira posição a esquerda - 1a linha
+	escreve_LCD("Sel. A B C");
 	
-
-
+	
     if (flag) {
 
       if (!tst_bit(PINB, PB2)) {
-		
-		 USART_Transmite('A');
-        	
-            
-      
+        cmd_LCD(0x01, 0); //limpa todo o display
+			escreve_LCD("Sel.  A");
+        
+		 	USART_Transmite('A');
+        	cmd_LCD(0x01, 0); //limpa todo o display
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        _delay_ms(100);
+        cmd_LCD(0x01, 0); //limpa todo o display
+        
+ 
         flag=0;
         
-      } else if (!tst_bit(PINB, PB3)) {
-        
+      }else  if (!tst_bit(PINB, PB3)) {
+        cmd_LCD(0x01, 0); //limpa todo o display
+        escreve_LCD("Sel.  B");
         USART_Transmite('B');
+        cmd_LCD(0x01, 0); //limpa todo o display
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        //cmd_LCD(USART_Recebe(),1);
+        _delay_ms(100);
+        cmd_LCD(0x01, 0); //limpa todo o display
+        
         flag=0;
        
-      } else if (!tst_bit(PINB, PB4)) {
-        
+      }else  if (!tst_bit(PINB, PB4)) {
+        cmd_LCD(0x01, 0); //limpa todo o display
+        escreve_LCD("Sel. C");
         USART_Transmite('C');
+        cmd_LCD(0x01, 0); //limpa todo o display
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        cmd_LCD(USART_Recebe(),1);
+        //cmd_LCD(USART_Recebe(),1);
+        _delay_ms(100);
+        cmd_LCD(0x01, 0); //limpa todo o display
 	
         flag=0;
         
-      } else if (!tst_bit(PINB, PB5)) {
-        
-        USART_Transmite('D');
-	
-        flag=0;
-        
-      }
-      //char op = USART_Recebe();
-  
-   
+      }    
+            
       
       
-
-      
+     
       
     }
   }
 
 }
 
+
+
+
 ISR(PCINT0_vect) {
   flag = 1;
-  _delay_ms(200);
+  //_delay_ms(200);
 }
 
