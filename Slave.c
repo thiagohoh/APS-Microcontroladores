@@ -116,22 +116,21 @@ unsigned char digitos[tam_vetor];
 //--------------------------------------------------------------------------
 int main() {
 
-	USART_Inic(MYUBRR);
+	USART_Inic(MYUBRR);//
 
 	//configura ADC
-	//ADMUX  = 0b11000000;  //Tensão interna de ref (1.1V), canal 0
-	//ADMUX =  (1<<REFS1)|(1<<REFS0);
+	
 	ADMUX = 0b11000000;// ADMUX =  (1<<REFS1)|(1<<REFS0);
 	DDRB = 0b00000010;        //pino pb1 PB2  como saída
 	PORTB = 0b11111101; //zera saídas e habilita pull-ups nos pinos não utilizados
-	//ADCSRA = 0b10000111;  //habilita o AD, prescaler = 128
-	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+	
+	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); //habilita o AD, prescaler = 128
 
 	while (1) {
 		
      
       char a;
-      switch(USART_Recebe()){
+      switch(USART_Recebe()){// espera receber os dados da transmissao
         
         
           case 'A':
@@ -141,31 +140,25 @@ int main() {
 		
 		
 		
-			messagero(1);
+			messagero(1);// chama as menssagens para a transmissao
 			//_delay_ms(600);
         	break;
       
 
        	  case 'B':        
-       		ident_num((unsigned int) le_luz(1), digitos);
-			messagero(2);
+       		ident_num((unsigned int) le_luz(1), digitos);//leitura de luz
+			messagero(2);// chama as menssagens para a transmissao
 			_delay_ms(600);
-        	break;
-        
+        	break;     
       
 		
-      	  case 'D':        
-      		ident_num((unsigned int) le_pote(2), digitos);
-			messagero(3);
-			_delay_ms(600);
-        	break;
-       
+      	      
       
 
 		  case 'C':        
       	 	
-			servo_controler((unsigned int) le_pote(2));
-			servoMsg((unsigned int) le_pote(2));
+			servo_controler((unsigned int) le_pote(2));// controle do servo
+			servoMsg((unsigned int) le_pote(2));// chama as menssagens para a transmissao
 			_delay_ms(600);
          break;
       }		
@@ -207,10 +200,10 @@ signed int le_pote(unsigned char canal) {           // função  do potencioment
 }
 signed int le_luz(unsigned char canal) {             // função  do sensor de luz
 	ADMUX = 0xF0; //Limpar o canal lido anteriormente
-	//ADMUX  = 0b11000101;//seta a tensao certa  refs1 refs0 para o canal 1
+	
 	ADMUX = canal; //Define o novo canal a ser lido
-	ADMUX = ADMUX | 0x40;
-	//ADMUX = 0b11110000;
+	ADMUX = ADMUX | 0x40; // seta voltagem para VCC padrao 5v
+	
 	set_bit(ADCSRA, ADSC); //inicia a conversão
 	while (tst_bit(ADCSRA, ADSC))
 		;
@@ -218,10 +211,11 @@ signed int le_luz(unsigned char canal) {             // função  do sensor de l
 }
 
 void servo_controler(unsigned int valor) { // função  do controlador do servo
-	ADMUX = ADMUX | 0x40;
+	ADMUX = ADMUX | 0x40; // seta voltagem para VCC padrao 5v
 	ICR1 = TOP; //configura o período do PWM (20 ms)
+  
+  
 	// Configura o TC1 para o modo PWM rápido via ICR1, prescaler = 8
-
 	TCCR1A = (1 << WGM11);
 	TCCR1B = (1 << WGM13) | (1 << WGM12) | (1 << CS11);
 	set_bit(TCCR1A, COM1A1); //ativa o PWM no OC1B, modo de comparação não-invertido
@@ -254,7 +248,7 @@ void servo_controler(unsigned int valor) { // função  do controlador do servo
 
 }
 
-void messagero(unsigned int who) { // função que envia as menssagens  para o serial monitor
+void messagero(unsigned int who) { // função que envia as menssagens  para o serial 
 	if (who == 1) {
 		//escreve_USART_Flash(msg1);
 		USART_Transmite(digitos[3]);
