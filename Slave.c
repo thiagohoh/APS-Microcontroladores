@@ -121,7 +121,7 @@ int main() {
 	//configura ADC
 	//ADMUX  = 0b11000000;  //Tensão interna de ref (1.1V), canal 0
 	//ADMUX =  (1<<REFS1)|(1<<REFS0);
-
+	ADMUX = 0b11000000;// ADMUX =  (1<<REFS1)|(1<<REFS0);
 	DDRB = 0b00000010;        //pino pb1 PB2  como saída
 	PORTB = 0b11111101; //zera saídas e habilita pull-ups nos pinos não utilizados
 	//ADCSRA = 0b10000111;  //habilita o AD, prescaler = 128
@@ -129,39 +129,44 @@ int main() {
 
 	while (1) {
 		
-      //escreve_USART_Flash(msg5);
+     
       char a;
       switch(USART_Recebe()){
         
         
           case 'A':
+       		 
        	 	ident_num((unsigned int) le_temp(0), digitos); //leitura de temperatura, sem sinal
+        
+		
+		
+		
 			messagero(1);
-			_delay_ms(1000);
+			//_delay_ms(600);
         	break;
       
 
        	  case 'B':        
        		ident_num((unsigned int) le_luz(1), digitos);
 			messagero(2);
-			_delay_ms(1000);
+			_delay_ms(600);
         	break;
         
       
 		
-      	  case 'C':        
+      	  case 'D':        
       		ident_num((unsigned int) le_pote(2), digitos);
 			messagero(3);
-			_delay_ms(1000);
+			_delay_ms(600);
         	break;
        
       
 
-		  case 'D':        
-      	 	//escreve_USART_Flash(msg4);
+		  case 'C':        
+      	 	
 			servo_controler((unsigned int) le_pote(2));
 			servoMsg((unsigned int) le_pote(2));
-			_delay_ms(1000);
+			_delay_ms(600);
          break;
       }		
 
@@ -174,9 +179,10 @@ int main() {
 
 //--------------------------------------------------------------------------------
 signed int le_temp(unsigned char canal) { // função  do sensor de temperatura
-	// ADMUX =  (1<<REFS1)|(1<<REFS0);
+	
 	ADMUX = 0xF0; //Limpar o canal lido anteriormente
-	ADMUX = 0b11000000;
+	ADMUX = 0b11000000;// ADMUX =  (1<<REFS1)|(1<<REFS0);
+  
 	ADMUX |= canal; //Define o novo canal a ser lido
 	//ADCSRA |= (1<<ADSC);
 	set_bit(ADCSRA, ADSC);                //inicia a conversão
@@ -258,7 +264,7 @@ void messagero(unsigned int who) { // função que envia as menssagens  para o s
 		USART_Transmite(digitos[0]);
 		USART_Transmite('*'); //simbolo '*'
 		USART_Transmite('C');
-		USART_Transmite('\n');
+		
 	} else if (who == 2) {
 		//escreve_USART_Flash(msg3);
 		USART_Transmite(digitos[4]);
@@ -266,7 +272,7 @@ void messagero(unsigned int who) { // função que envia as menssagens  para o s
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	} else if (who == 3) {
 		//escreve_USART_Flash(msg2);
@@ -275,7 +281,7 @@ void messagero(unsigned int who) { // função que envia as menssagens  para o s
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 	}
 }
 
@@ -289,7 +295,7 @@ signed int servoMsg(unsigned int valor) {
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	} else if ((valor >= 205) && (valor < 409)) {
 
@@ -299,7 +305,7 @@ signed int servoMsg(unsigned int valor) {
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	} else if ((valor >= 410) && (valor < 614)) {
 
@@ -309,7 +315,7 @@ signed int servoMsg(unsigned int valor) {
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	}
 
@@ -321,7 +327,7 @@ signed int servoMsg(unsigned int valor) {
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	} else if ((valor >= 820) && (valor <= 1023)) {
 		ident_num((unsigned int) 180, digitos);
@@ -330,7 +336,7 @@ signed int servoMsg(unsigned int valor) {
 		USART_Transmite(digitos[2]);
 		USART_Transmite(digitos[1]);
 		USART_Transmite(digitos[0]);
-		USART_Transmite('\n');
+		
 
 	}
 
