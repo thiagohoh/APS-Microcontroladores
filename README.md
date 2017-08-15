@@ -5,3 +5,4 @@ where:
 A gets the Temperature information from Arduino uno Slave
 B gets light sensor information from Arduino uno
 C moves the microServo, 
+asgs
